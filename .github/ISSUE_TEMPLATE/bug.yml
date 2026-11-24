@@ -1,30 +1,30 @@
-name: Ошибка
-description: Что-то работает не так
-labels: [ошибка]
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
 body:
   - type: textarea
     id: what
     attributes:
-      label: Что случилось
-      description: Что вы делали, что ожидали увидеть и что произошло.
+      label: What happened
+      description: What you did, what you expected and what happened instead.
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: Версия Universal Overlay
+      label: Universal Overlay version
       description: Settings → General → Updates.
-      placeholder: "0.1.0"
+      placeholder: "0.1.1"
     validations:
       required: true
   - type: input
     id: system
     attributes:
-      label: Система и видеокарта
+      label: System and graphics card
       placeholder: "Windows 11 24H2, Radeon RX 9060 XT"
   - type: textarea
     id: probe
     attributes:
-      label: Вывод uo-probe
-      description: Диагностика датчиков и FPS — запустите `uo-probe` из папки программы и вставьте вывод.
+      label: uo-probe output
+      description: Sensor and FPS diagnostics — run `uo-probe` from the program folder and paste its output.
       render: text

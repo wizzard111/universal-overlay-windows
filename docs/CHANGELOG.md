@@ -1,26 +1,29 @@
-# Изменения
+# Changelog
 
 ## 0.1.1
 
-* Вся программа на английском: настройки, оверлей, меню значка, установщик,
-  апдейтер и деинсталлятор.
+* The whole program is in English: settings, overlay, tray menu, installer,
+  updater and uninstaller.
+* Updating from 0.1.0 replaces the old settings shortcut instead of leaving a
+  second one.
 
-## 0.1.0 — первый выпуск
+## 0.1.0 — first release
 
-* Оверлей поверх игр: FPS, время кадра с графиком, 1% / 0.1% low.
-* Графики любых датчиков — сколько угодно, у каждого свои цвет, высота,
-  окно истории и шкала.
-* Гибкий внешний вид: раскладка, шрифт, цвета, фон, скругление, размер
-  оверлея 25–400%, прозрачность, угол экрана и монитор.
-* Настройки: тёмная, светлая или системная тема, 8 акцентных цветов, анимации;
-  изменения применяются к оверлею сразу.
-* Автообновление с GitHub с проверкой SHA-256; старая версия удаляется
-  целиком, настройки сохраняются.
-* Лёгкость: скрытый оверлей не тратит CPU; опрашиваются только показанные
-  датчики; между тиками перерисовывается и отправляется в окно только график.
-* Оверлей работает **без прав администратора**. Температуру CPU читает
-  служба `uo-sensord` (драйвер PawnIO) и только по запросу видимого оверлея.
-* Нативный установщик `install.exe` / `uninstall.exe` вместо скриптов: один
-  запрос UAC, журнал установки, «Пуск», «Параметры → Приложения», автозапуск.
-* У всех программ есть иконка, манифест и сведения о версии.
-* FPS из ETW (DXGI, D3D9, DxgKrnl — Vulkan и OpenGL), без внедрения в игру.
+* In-game overlay: FPS, frame time with a graph, 1% / 0.1% lows.
+* Graphs of any sensor — as many as you like, each with its own color, height,
+  history window and scale.
+* Flexible styling: layout, font, colors, background, corner radius, overlay
+  size 25–400%, opacity, screen corner and monitor.
+* Settings app: dark, light or system theme, 8 accent colors, animations;
+  changes apply to the overlay instantly.
+* Automatic updates from GitHub with SHA-256 verification; the old version is
+  removed completely, settings are kept.
+* Lightweight: the hidden overlay uses no CPU; only displayed sensors are
+  polled; between sensor ticks only the graph is redrawn and sent to the window.
+* The overlay runs **without administrator rights**. The CPU temperature is
+  read by the `uo-sensord` service (PawnIO driver), only when the visible
+  overlay asks for it.
+* Native `install.exe` / `uninstall.exe` instead of scripts: one UAC prompt,
+  a setup log, Start menu, Installed apps, autostart.
+* Every program has an icon, a manifest and version information.
+* FPS from ETW (DXGI, D3D9, DxgKrnl — Vulkan and OpenGL), no injection.
