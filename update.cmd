@@ -8,7 +8,7 @@ cd /d "%~dp0"
 
 if exist ".git" (
     where git >nul 2>nul && where cargo >nul 2>nul && (
-        echo Получаю последние изменения...
+        echo Pulling the latest changes...
         git pull --ff-only || ( pause & exit /b 1 )
         powershell -NoProfile -ExecutionPolicy Bypass -File "source\build\build.ps1" || ( pause & exit /b 1 )
         start "" /wait "source\target\package\universal-overlay-windows-x86_64\install.exe" --update
@@ -23,7 +23,7 @@ if exist "update.exe" (
 set "DIR=%ProgramFiles%\Universal Overlay"
 for /f "tokens=2,*" %%a in ('reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\UniversalOverlay" /v InstallLocation 2^>nul ^| find "InstallLocation"') do set "DIR=%%b"
 if not exist "%DIR%\universal-overlay-updater.exe" (
-    echo Universal Overlay не установлен. Запустите install.cmd.
+    echo Universal Overlay is not installed. Run install.cmd.
     pause
     exit /b 1
 )

@@ -117,7 +117,7 @@ impl Key {
         if r == 0 {
             Ok(Key(h))
         } else {
-            Err(format!("реестр {key}: {r}"))
+            Err(format!("registry {key}: {r}"))
         }
     }
 
@@ -273,7 +273,7 @@ pub fn run_wait(exe: &Path, args: &str) -> Result<u32, String> {
         info.lpParameters = params.as_ptr();
         info.nShow = SW_HIDE;
         if ShellExecuteExW(&mut info) == 0 || info.hProcess.is_null() {
-            return Err(format!("не удалось запустить {}", exe.display()));
+            return Err(format!("could not start {}", exe.display()));
         }
         WaitForSingleObject(info.hProcess, INFINITE);
         let mut code = 1;
@@ -356,9 +356,7 @@ impl Drop for Sc {
 fn scm() -> Result<Sc, String> {
     let h = unsafe { OpenSCManagerW(null(), null(), SC_MANAGER_ALL_ACCESS) };
     if h.is_null() {
-        Err(format!("диспетчер служб: {}", unsafe {
-            GetLastError()
-        }))
+        Err(format!("service manager: {}", unsafe { GetLastError() }))
     } else {
         Ok(Sc(h))
     }
@@ -438,7 +436,7 @@ pub fn service_install(exe: &Path) -> Result<(), String> {
             Sc(h)
         }
     };
-    let mut desc_text = wide("Читает температуру CPU через драйвер PawnIO для Universal Overlay. Работает только пока оверлей запрашивает данные.");
+    let mut desc_text = wide("Reads the CPU temperature through the PawnIO driver for Universal Overlay. Works only while the overlay requests data.");
     let desc = SERVICE_DESCRIPTIONW {
         lpDescription: desc_text.as_mut_ptr(),
     };
@@ -519,11 +517,11 @@ fn session_user_sid() -> Option<Vec<u8>> {
 /// lets a normal program read frame-present ETW events. Ok(false) = already
 /// a member.
 pub fn add_to_performance_log_users() -> Result<bool, String> {
-    let mut user = session_user_sid().ok_or("не найден вошедший пользователь")?;
+    let mut user = session_user_sid().ok_or("signed-in user not found")?;
     unsafe {
         let mut group_sid: PSID = null_mut();
         if ConvertStringSidToSidW(wide("S-1-5-32-559").as_ptr(), &mut group_sid) == 0 {
-            return Err("SID группы".into());
+            return Err("group SID".into());
         }
         let mut name = [0u16; 256];
         let mut name_len = name.len() as u32;
@@ -541,7 +539,7 @@ pub fn add_to_performance_log_users() -> Result<bool, String> {
         );
         LocalFree(group_sid as HLOCAL);
         if ok == 0 {
-            return Err(format!("имя группы: {}", GetLastError()));
+            return Err(format!("group name: {}", GetLastError()));
         }
         let member = LOCALGROUP_MEMBERS_INFO_0 {
             lgrmi0_sid: user.as_mut_ptr().cast(),
@@ -556,7 +554,7 @@ pub fn add_to_performance_log_users() -> Result<bool, String> {
         match r {
             0 => Ok(true),
             ERROR_MEMBER_IN_ALIAS => Ok(false),
-            e => Err(format!("код {e}")),
+            e => Err(format!("code {e}")),
         }
     }
 }

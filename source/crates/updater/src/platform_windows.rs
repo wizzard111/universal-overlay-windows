@@ -71,7 +71,7 @@ pub fn restart_staged(work: &Path, repo: &str, install: &Path) -> Option<Result<
         .status();
     Some(match st {
         Ok(s) if s.success() => Ok(String::new()),
-        Ok(_) => Err("обновление не удалось".into()),
+        Ok(_) => Err("update failed".into()),
         Err(e) => Err(e.to_string()),
     })
 }
@@ -101,7 +101,7 @@ pub fn run_installer(pkg: &Path, install: &Path) -> Result<(), String> {
         info.lpParameters = params.as_ptr();
         info.nShow = SW_SHOWNORMAL;
         if ShellExecuteExW(&mut info) == 0 || info.hProcess.is_null() {
-            return Err("установщик не запущен (отказано в правах администратора?)".into());
+            return Err("the installer did not start (administrator rights denied?)".into());
         }
         WaitForSingleObject(info.hProcess, INFINITE);
         let mut code = 1u32;
@@ -110,7 +110,7 @@ pub fn run_installer(pkg: &Path, install: &Path) -> Result<(), String> {
         if code == 0 {
             Ok(())
         } else {
-            Err(format!("установщик завершился с кодом {code}"))
+            Err(format!("the installer exited with code {code}"))
         }
     }
 }
@@ -121,7 +121,7 @@ pub fn pause_if_console() {
     let mut ids = [0u32; 4];
     let n = unsafe { GetConsoleProcessList(ids.as_mut_ptr(), ids.len() as u32) };
     if n == 1 && !std::env::args().any(|a| a == "--staged") {
-        println!("Нажмите Enter, чтобы закрыть окно");
+        println!("Press Enter to close this window");
         let _ = std::io::stdin().read_line(&mut String::new());
     }
 }

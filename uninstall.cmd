@@ -11,7 +11,7 @@ if exist "uninstall.exe" (
 set "DIR=%ProgramFiles%\Universal Overlay"
 for /f "tokens=2,*" %%a in ('reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\UniversalOverlay" /v InstallLocation 2^>nul ^| find "InstallLocation"') do set "DIR=%%b"
 if not exist "%DIR%\uninstall.exe" (
-    echo Universal Overlay не установлен.
+    echo Universal Overlay is not installed.
     pause
     exit /b 1
 )

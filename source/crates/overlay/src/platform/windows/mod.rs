@@ -222,7 +222,7 @@ impl App {
         let tip = if self.hotkey_ok {
             format!("Universal Overlay — {hotkey}")
         } else {
-            format!("Universal Overlay — сочетание {hotkey} занято")
+            format!("Universal Overlay — hotkey {hotkey} is taken")
         };
         self.tray.set_tip(&tip);
     }
@@ -409,16 +409,16 @@ fn tray_menu(hwnd: HWND) {
             &format!(
                 "{}\t{hotkey}",
                 if visible {
-                    "Скрыть оверлей"
+                    "Hide overlay"
                 } else {
-                    "Показать оверлей"
+                    "Show overlay"
                 }
             ),
         );
-        add(CMD_SETTINGS, "Настройки…");
-        add(CMD_RELOAD, "Перечитать конфиг");
+        add(CMD_SETTINGS, "Settings…");
+        add(CMD_RELOAD, "Reload config");
         AppendMenuW(m, MF_SEPARATOR, 0, std::ptr::null());
-        add(CMD_EXIT, "Выход");
+        add(CMD_EXIT, "Exit");
         SetMenuDefaultItem(m, CMD_SETTINGS as u32, 0);
         let mut pt = POINT { x: 0, y: 0 };
         GetCursorPos(&mut pt);

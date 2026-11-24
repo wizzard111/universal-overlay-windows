@@ -13,14 +13,14 @@ if exist "app\universal-overlay.exe" if exist "install.exe" (
 
 set "PKG=source\target\package\universal-overlay-windows-x86_64"
 if not exist "%PKG%\install.exe" (
-    echo Сборка Universal Overlay из исходников...
+    echo Building Universal Overlay from source...
     where cargo >nul 2>nul || (
-        echo Нужен Rust: https://rustup.rs  ^(или скачайте готовый релиз^)
+        echo Rust is required: https://rustup.rs  ^(or download a release^)
         pause
         exit /b 1
     )
     powershell -NoProfile -ExecutionPolicy Bypass -File "source\build\build.ps1" || (
-        echo Сборка не удалась.
+        echo The build failed.
         pause
         exit /b 1
     )

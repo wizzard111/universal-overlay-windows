@@ -30,7 +30,7 @@ $Cache = Join-Path $Source 'target\pawnio-cache'
 
 $version = (Select-String -Path 'Cargo.toml' -Pattern '^version\s*=\s*"([^"]+)"').Matches[0].Groups[1].Value
 Write-Host "== Universal Overlay $version (Windows)"
-if (-not $env:UO_GITHUB_REPO) { Write-Host '   UO_GITHUB_REPO не задан: апдейтер использует wizzard111/universal-overlay-windows' }
+if (-not $env:UO_GITHUB_REPO) { Write-Host '   UO_GITHUB_REPO not set: the updater uses wizzard111/universal-overlay-windows' }
 
 # ---------------------------------------------------------------- build
 $cargo = @('build', '--release', '--workspace')

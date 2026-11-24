@@ -77,17 +77,17 @@ fn fetch_latest(repo: &str) -> Result<Release, String> {
     let out = curl()
         .args(["-H", "Accept: application/vnd.github+json", &url])
         .output()
-        .map_err(|e| format!("curl не найден: {e}"))?;
+        .map_err(|e| format!("curl not found: {e}"))?;
     if !out.status.success() {
         return Err(format!(
-            "GitHub недоступен ({})",
+            "GitHub is unreachable ({})",
             String::from_utf8_lossy(&out.stderr).trim()
         ));
     }
     let v: serde_json::Value = serde_json::from_slice(&out.stdout).map_err(|e| e.to_string())?;
     let version = v["tag_name"]
         .as_str()
-        .ok_or("в релизе нет tag_name")?
+        .ok_or("the release has no tag_name")?
         .trim_start_matches(['v', 'V'])
         .to_string();
     let want = release_asset_name();
@@ -105,7 +105,7 @@ fn fetch_latest(repo: &str) -> Result<Release, String> {
             sums_url = Some(url);
         }
     }
-    let asset_url = asset_url.ok_or_else(|| format!("в релизе {version} нет файла {want}"))?;
+    let asset_url = asset_url.ok_or_else(|| format!("release {version} has no file {want}"))?;
     Ok(Release {
         version,
         asset_url,
@@ -123,7 +123,7 @@ fn download(url: &str, to: &Path) -> Result<(), String> {
     if st.success() {
         Ok(())
     } else {
-        Err(format!("не удалось скачать {url}"))
+        Err(format!("could not download {url}"))
     }
 }
 
@@ -176,7 +176,7 @@ fn update(repo: &str) -> Result<String, String> {
     let current = installed_version(&install);
     let rel = fetch_latest(repo)?;
     if !version_newer(&rel.version, &current) {
-        return Ok(format!("Установлена последняя версия {current}"));
+        return Ok(format!("The latest version {current} is installed"));
     }
     let work = work_dir(&rel.version);
     if !has_arg("--staged") {
@@ -194,7 +194,7 @@ fn update(repo: &str) -> Result<String, String> {
     }
 
     log(&format!(
-        "Загрузка версии {} (установлена {current})…",
+        "Downloading version {} (installed: {current})…",
         rel.version
     ));
     let archive = work.join(release_asset_name());
@@ -212,13 +212,15 @@ fn update(repo: &str) -> Result<String, String> {
                     let (h, f) = (it.next()?, it.next()?);
                     (f.trim_start_matches('*') == name).then(|| h.to_lowercase())
                 })
-                .ok_or("в SHA256SUMS.txt нет нужного файла")?;
+                .ok_or("SHA256SUMS.txt does not list the file")?;
             if sha256_hex(&archive)? != want {
-                return Err("контрольная сумма не совпала — файл повреждён или подменён".into());
+                return Err("checksum mismatch — the file is damaged or was tampered with".into());
             }
         }
         None => {
-            return Err("в релизе нет SHA256SUMS.txt — обновление без проверки запрещено".into())
+            return Err(
+                "the release has no SHA256SUMS.txt — unverified updates are not allowed".into(),
+            )
         }
     }
 
@@ -233,7 +235,7 @@ fn update(repo: &str) -> Result<String, String> {
         .status()
         .map_err(|e| e.to_string())?;
     if !st.success() {
-        return Err("не удалось распаковать архив".into());
+        return Err("could not unpack the archive".into());
     }
     // The archive contains a single top-level directory.
     let pkg = std::fs::read_dir(&x)
@@ -241,13 +243,13 @@ fn update(repo: &str) -> Result<String, String> {
         .flatten()
         .map(|e| e.path())
         .find(|p| p.is_dir())
-        .ok_or("пустой архив")?;
+        .ok_or("empty archive")?;
 
-    log("Установка…");
+    log("Installing…");
     platform::run_installer(&pkg, &install)?;
     let _ = std::fs::remove_file(&archive);
     let _ = std::fs::remove_dir_all(&x);
-    Ok(format!("Обновлено до версии {}", rel.version))
+    Ok(format!("Updated to version {}", rel.version))
 }
 
 fn main() -> ExitCode {
@@ -281,7 +283,7 @@ fn main() -> ExitCode {
             ExitCode::SUCCESS
         }
         Err(e) => {
-            log(&format!("Ошибка обновления: {e}"));
+            log(&format!("Update failed: {e}"));
             ExitCode::FAILURE
         }
     };

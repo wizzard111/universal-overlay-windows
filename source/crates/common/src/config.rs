@@ -79,14 +79,14 @@ impl Anchor {
 
     pub fn name(self) -> &'static str {
         match self {
-            Anchor::TopLeft => "Сверху слева",
-            Anchor::TopCenter => "Сверху по центру",
-            Anchor::TopRight => "Сверху справа",
-            Anchor::MiddleLeft => "Слева по центру",
-            Anchor::MiddleRight => "Справа по центру",
-            Anchor::BottomLeft => "Снизу слева",
-            Anchor::BottomCenter => "Снизу по центру",
-            Anchor::BottomRight => "Снизу справа",
+            Anchor::TopLeft => "Top left",
+            Anchor::TopCenter => "Top center",
+            Anchor::TopRight => "Top right",
+            Anchor::MiddleLeft => "Middle left",
+            Anchor::MiddleRight => "Middle right",
+            Anchor::BottomLeft => "Bottom left",
+            Anchor::BottomCenter => "Bottom center",
+            Anchor::BottomRight => "Bottom right",
         }
     }
 
@@ -425,14 +425,14 @@ impl UiAccent {
 
     pub fn name(self) -> &'static str {
         match self {
-            UiAccent::Black => "Чёрный",
-            UiAccent::White => "Белый",
-            UiAccent::DarkRed => "Тёмно-красный",
-            UiAccent::Gray => "Серый",
-            UiAccent::DarkBlue => "Тёмно-синий",
-            UiAccent::Emerald => "Изумрудный",
-            UiAccent::Violet => "Фиолетовый",
-            UiAccent::Amber => "Янтарный",
+            UiAccent::Black => "Black",
+            UiAccent::White => "White",
+            UiAccent::DarkRed => "Dark red",
+            UiAccent::Gray => "Gray",
+            UiAccent::DarkBlue => "Dark blue",
+            UiAccent::Emerald => "Emerald",
+            UiAccent::Violet => "Violet",
+            UiAccent::Amber => "Amber",
         }
     }
 

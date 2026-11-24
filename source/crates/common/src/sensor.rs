@@ -31,25 +31,25 @@ macro_rules! sensors {
 }
 
 sensors! {
-    Fps        => "FPS",      "",    0, "000",      "Кадров в секунду";
-    FrameTime  => "FT",       "ms",  1, "00.0",     "Время кадра (среднее за окно FPS)";
+    Fps        => "FPS",      "",    0, "000",      "Frames per second";
+    FrameTime  => "FT",       "ms",  1, "00.0",     "Frame time (average over the FPS window)";
     Low1       => "1% LOW",   "",    0, "000",      "1% low FPS";
     Low01      => "0.1% LOW", "",    0, "000",      "0.1% low FPS";
-    GpuLoad    => "GPU",      "%",   0, "100",      "Загрузка GPU";
-    GpuTemp    => "GPU TEMP", "°C",  0, "100",      "Температура GPU";
-    GpuHotspot => "GPU HOT",  "°C",  0, "100",      "Температура GPU (hotspot)";
-    GpuMemTemp => "VRAM TEMP","°C",  0, "100",      "Температура видеопамяти";
-    GpuClock   => "GPU CLK",  "MHz", 0, "0000",     "Частота GPU";
-    GpuMemClock=> "MEM CLK",  "MHz", 0, "0000",     "Частота видеопамяти";
-    GpuPower   => "GPU PWR",  "W",   0, "000",      "Потребление GPU";
-    GpuVoltage => "GPU V",    "mV",  0, "0000",     "Напряжение GPU";
-    GpuFan     => "FAN",      "RPM", 0, "0000",     "Обороты вентилятора GPU";
-    GpuFanPct  => "FAN",      "%",   0, "100",      "Скорость вентилятора GPU, %";
-    GpuVram    => "VRAM",     "MB",  0, "00000",    "Занято видеопамяти";
-    CpuLoad    => "CPU",      "%",   0, "100",      "Загрузка CPU";
-    CpuClock   => "CPU CLK",  "MHz", 0, "0000",     "Частота CPU";
-    CpuTemp    => "CPU TEMP", "°C",  0, "100",      "Температура CPU";
-    RamUsed    => "RAM",      "MB",  0, "00000",    "Занято ОЗУ";
-    RamLoad    => "RAM",      "%",   0, "100",      "Занято ОЗУ, %";
-    Clock      => "TIME",     "",    0, "00:00:00", "Текущее время";
+    GpuLoad    => "GPU",      "%",   0, "100",      "GPU load";
+    GpuTemp    => "GPU TEMP", "°C",  0, "100",      "GPU temperature";
+    GpuHotspot => "GPU HOT",  "°C",  0, "100",      "GPU temperature (hotspot)";
+    GpuMemTemp => "VRAM TEMP","°C",  0, "100",      "VRAM temperature";
+    GpuClock   => "GPU CLK",  "MHz", 0, "0000",     "GPU clock";
+    GpuMemClock=> "MEM CLK",  "MHz", 0, "0000",     "VRAM clock";
+    GpuPower   => "GPU PWR",  "W",   0, "000",      "GPU power";
+    GpuVoltage => "GPU V",    "mV",  0, "0000",     "GPU voltage";
+    GpuFan     => "FAN",      "RPM", 0, "0000",     "GPU fan speed";
+    GpuFanPct  => "FAN",      "%",   0, "100",      "GPU fan speed, %";
+    GpuVram    => "VRAM",     "MB",  0, "00000",    "VRAM used";
+    CpuLoad    => "CPU",      "%",   0, "100",      "CPU load";
+    CpuClock   => "CPU CLK",  "MHz", 0, "0000",     "CPU clock";
+    CpuTemp    => "CPU TEMP", "°C",  0, "100",      "CPU temperature";
+    RamUsed    => "RAM",      "MB",  0, "00000",    "RAM used";
+    RamLoad    => "RAM",      "%",   0, "100",      "RAM used, %";
+    Clock      => "TIME",     "",    0, "00:00:00", "Current time";
 }

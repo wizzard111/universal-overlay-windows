@@ -47,10 +47,10 @@ impl Sensors {
     pub fn cpu_temp_status(&self) -> String {
         match &self.cpu_temp {
             Ok(t) => format!(
-                "служба uo-sensord: {}",
+                "uo-sensord service: {}",
                 uo_common::sensord::status_text(t.status())
             ),
-            Err(_) => "служба uo-sensord не запущена".into(),
+            Err(_) => "uo-sensord service is not running".into(),
         }
     }
 
@@ -58,7 +58,7 @@ impl Sensors {
         self.gpu
             .as_ref()
             .map(|g| g.name())
-            .unwrap_or_else(|| "нет".into())
+            .unwrap_or_else(|| "none".into())
     }
 
     pub fn poll(&mut self, s: &mut Snapshot, want: Want) {

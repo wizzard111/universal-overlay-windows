@@ -23,12 +23,12 @@ enum Tab {
 }
 
 const TABS: &[(Tab, &str)] = &[
-    (Tab::General, "Общие"),
-    (Tab::Style, "Вид"),
-    (Tab::Sensors, "Датчики"),
-    (Tab::Graph, "Графики"),
-    (Tab::Stats, "Статистика"),
-    (Tab::Look, "Оформление"),
+    (Tab::General, "General"),
+    (Tab::Style, "Style"),
+    (Tab::Sensors, "Sensors"),
+    (Tab::Graph, "Graphs"),
+    (Tab::Stats, "Statistics"),
+    (Tab::Look, "Appearance"),
 ];
 
 struct App {
@@ -101,12 +101,12 @@ impl App {
                 self.saved = self.cfg.clone();
                 self.status_since = Instant::now();
                 self.status = if overlay::notify_reload() {
-                    "Сохранено".into()
+                    "Saved".into()
                 } else {
-                    "Сохранено · оверлей не запущен".into()
+                    "Saved · overlay is not running".into()
                 };
             }
-            Err(e) => self.status = format!("Ошибка сохранения: {e}"),
+            Err(e) => self.status = format!("Could not save: {e}"),
         }
     }
 }
@@ -168,7 +168,7 @@ impl App {
                     }
                 }
             }
-            theme::primary(ui, "нажмите сочетание · Esc — отмена");
+            theme::primary(ui, "press a hotkey · Esc to cancel");
         } else {
             if ui
                 .add(egui::Button::new(
@@ -176,33 +176,33 @@ impl App {
                         .monospace()
                         .color(text()),
                 ))
-                .on_hover_text("Нажмите, чтобы записать новое сочетание")
+                .on_hover_text("Click to record a new hotkey")
                 .clicked()
             {
                 self.capturing = true;
             }
             if Hotkey::parse(&self.cfg.general.hotkey).is_none() {
-                ui.label(RichText::new("не распознано").color(accent_hi()));
+                ui.label(RichText::new("not recognized").color(accent_hi()));
             }
         }
     }
 
     fn tab_general(&mut self, ui: &mut egui::Ui) {
-        theme::section(ui, "Управление");
+        theme::section(ui, "Controls");
         grid(ui, "g1", |ui| {
-            row(ui, "Горячая клавиша", |ui| self.hotkey_ui(ui));
-            row(ui, "Показывать при запуске", |ui| {
+            row(ui, "Hotkey", |ui| self.hotkey_ui(ui));
+            row(ui, "Show on start", |ui| {
                 theme::toggle(ui, &mut self.cfg.general.show_on_start);
             });
         });
         let g = &mut self.cfg.general;
-        theme::section(ui, "Положение");
+        theme::section(ui, "Position");
         grid(ui, "g2", |ui| {
-            row(ui, "Монитор", |ui| {
-                ui.selectable_value(&mut g.monitor, MonitorMode::Foreground, "С игрой");
-                ui.selectable_value(&mut g.monitor, MonitorMode::Primary, "Основной");
+            row(ui, "Monitor", |ui| {
+                ui.selectable_value(&mut g.monitor, MonitorMode::Foreground, "With the game");
+                ui.selectable_value(&mut g.monitor, MonitorMode::Primary, "Primary");
             });
-            row(ui, "Угол", |ui| {
+            row(ui, "Corner", |ui| {
                 egui::ComboBox::from_id_salt("anchor")
                     .selected_text(g.anchor.name())
                     .show_ui(ui, |ui| {
@@ -211,7 +211,7 @@ impl App {
                         }
                     });
             });
-            row(ui, "Отступ", |ui| {
+            row(ui, "Offset", |ui| {
                 ui.add(
                     egui::DragValue::new(&mut g.offset_x)
                         .range(-4000..=4000)
@@ -223,14 +223,14 @@ impl App {
                         .prefix("y "),
                 );
             });
-            row(ui, "Размер оверлея", |ui| {
+            row(ui, "Overlay size", |ui| {
                 ui.add(
                     egui::Slider::new(&mut g.scale, 0.25..=4.0)
                         .step_by(0.05)
                         .custom_formatter(|v, _| format!("{:.0}%", v * 100.0)),
                 );
             });
-            row(ui, "Прозрачность", |ui| {
+            row(ui, "Opacity", |ui| {
                 ui.add(
                     egui::Slider::new(&mut g.opacity, 0.1..=1.0)
                         .step_by(0.05)
@@ -238,16 +238,16 @@ impl App {
                 );
             });
         });
-        theme::section(ui, "Обновление");
+        theme::section(ui, "Refresh");
         grid(ui, "g3", |ui| {
-            row(ui, "Датчики, мс", |ui| {
+            row(ui, "Sensors, ms", |ui| {
                 ui.add(egui::Slider::new(&mut g.update_interval_ms, 100..=5000).logarithmic(true));
             });
-            row(ui, "График, Гц", |ui| {
+            row(ui, "Graph, Hz", |ui| {
                 ui.add(egui::Slider::new(&mut g.graph_refresh_hz, 1..=144));
             });
         });
-        note(ui, "Размер умножается на масштаб монитора в системе. Оверлей не перехватывает клики и не забирает фокус.");
+        note(ui, "The size is multiplied by the display scale set in the system. The overlay never takes clicks or focus.");
         self.updates_ui(ui);
     }
 
@@ -255,19 +255,19 @@ impl App {
         let fonts = &self.fonts;
         let filter = &mut self.font_filter;
         let s = &mut self.cfg.style;
-        theme::section(ui, "Текст");
+        theme::section(ui, "Text");
         grid(ui, "s1", |ui| {
-            row(ui, "Раскладка", |ui| {
-                ui.selectable_value(&mut s.layout, Layout::Vertical, "Столбец");
-                ui.selectable_value(&mut s.layout, Layout::Horizontal, "Строка");
+            row(ui, "Layout", |ui| {
+                ui.selectable_value(&mut s.layout, Layout::Vertical, "Column");
+                ui.selectable_value(&mut s.layout, Layout::Horizontal, "Row");
             });
-            row(ui, "Шрифт", |ui| {
+            row(ui, "Font", |ui| {
                 egui::ComboBox::from_id_salt("font")
                     .width(240.0)
                     .height(380.0)
                     .selected_text(s.font.clone())
                     .show_ui(ui, |ui| {
-                        ui.add(egui::TextEdit::singleline(filter).hint_text("поиск"));
+                        ui.add(egui::TextEdit::singleline(filter).hint_text("search"));
                         let f = filter.to_lowercase();
                         for name in fonts
                             .iter()
@@ -277,39 +277,35 @@ impl App {
                         }
                     });
             });
-            row(ui, "Размер значений", |ui| {
+            row(ui, "Value size", |ui| {
                 ui.add(egui::Slider::new(&mut s.value_size, 8.0..=48.0).step_by(0.5));
             });
-            row(ui, "Размер подписей", |ui| {
+            row(ui, "Label size", |ui| {
                 ui.add(egui::Slider::new(&mut s.label_size, 6.0..=36.0).step_by(0.5));
             });
-            row(ui, "Тень", |ui| {
+            row(ui, "Shadow", |ui| {
                 theme::toggle(ui, &mut s.text_shadow);
             });
         });
-        theme::section(ui, "Цвета");
+        theme::section(ui, "Colors");
         grid(ui, "s2", |ui| {
-            row(ui, "Подписи", |ui| {
-                color_edit(ui, &mut s.label_color)
-            });
-            row(ui, "Значения", |ui| {
-                color_edit(ui, &mut s.value_color)
-            });
-            row(ui, "Единицы", |ui| color_edit(ui, &mut s.unit_color));
-            row(ui, "Фон", |ui| color_edit(ui, &mut s.background));
+            row(ui, "Labels", |ui| color_edit(ui, &mut s.label_color));
+            row(ui, "Values", |ui| color_edit(ui, &mut s.value_color));
+            row(ui, "Units", |ui| color_edit(ui, &mut s.unit_color));
+            row(ui, "Background", |ui| color_edit(ui, &mut s.background));
         });
-        theme::section(ui, "Геометрия");
+        theme::section(ui, "Geometry");
         grid(ui, "s3", |ui| {
-            row(ui, "Скругление", |ui| {
+            row(ui, "Corner radius", |ui| {
                 ui.add(egui::Slider::new(&mut s.corner_radius, 0.0..=30.0));
             });
-            row(ui, "Внутренний отступ", |ui| {
+            row(ui, "Padding", |ui| {
                 ui.add(egui::Slider::new(&mut s.padding, 0.0..=40.0));
             });
-            row(ui, "Между строками", |ui| {
+            row(ui, "Row spacing", |ui| {
                 ui.add(egui::Slider::new(&mut s.row_spacing, 0.0..=30.0));
             });
-            row(ui, "Между колонками", |ui| {
+            row(ui, "Column spacing", |ui| {
                 ui.add(egui::Slider::new(&mut s.column_spacing, 0.0..=60.0));
             });
         });
@@ -318,7 +314,7 @@ impl App {
     fn tab_sensors(&mut self, ui: &mut egui::Ui) {
         note(
             ui,
-            "Порядок списка — порядок в оверлее. Пустая подпись — подпись по умолчанию.",
+            "The list order is the overlay order. An empty label means the default label.",
         );
         ui.add_space(6.0);
         let n = self.cfg.sensors.len();
@@ -327,7 +323,7 @@ impl App {
             .num_columns(5)
             .spacing([14.0, 8.0])
             .show(ui, |ui| {
-                for h in ["", "Датчик", "Подпись", "Цвет", ""] {
+                for h in ["", "Sensor", "Label", "Color", ""] {
                     ui.label(
                         RichText::new(h.to_uppercase())
                             .size(11.0)
@@ -379,12 +375,12 @@ impl App {
 
     fn tab_graph(&mut self, ui: &mut egui::Ui) {
         let g = &mut self.cfg.graph;
-        theme::section(ui, "График времени кадра");
+        theme::section(ui, "Frame-time graph");
         grid(ui, "gr1", |ui| {
-            row(ui, "Показывать", |ui| {
+            row(ui, "Show", |ui| {
                 theme::toggle(ui, &mut g.enabled);
             });
-            row(ui, "Размер", |ui| {
+            row(ui, "Size", |ui| {
                 ui.add(
                     egui::DragValue::new(&mut g.width)
                         .range(40.0..=2000.0)
@@ -397,93 +393,93 @@ impl App {
                         .suffix(" px"),
                 );
             });
-            row(ui, "Ось X", |ui| {
-                ui.selectable_value(&mut g.mode, GraphMode::Time, "Время");
-                ui.selectable_value(&mut g.mode, GraphMode::Frames, "Кадры");
+            row(ui, "X axis", |ui| {
+                ui.selectable_value(&mut g.mode, GraphMode::Time, "Time");
+                ui.selectable_value(&mut g.mode, GraphMode::Frames, "Frames");
             });
             match g.mode {
-                GraphMode::Time => row(ui, "Окно", |ui| {
+                GraphMode::Time => row(ui, "Window", |ui| {
                     ui.add(
                         egui::Slider::new(&mut g.time_window_s, 1.0..=60.0)
                             .step_by(0.5)
-                            .suffix(" с"),
+                            .suffix(" s"),
                     );
                 }),
-                GraphMode::Frames => row(ui, "Окно", |ui| {
+                GraphMode::Frames => row(ui, "Window", |ui| {
                     ui.add(
                         egui::Slider::new(&mut g.frame_count, 30..=5000)
                             .logarithmic(true)
-                            .suffix(" кадров"),
+                            .suffix(" frames"),
                     );
                 }),
             }
-            row(ui, "Шкала Y", |ui| {
-                ui.selectable_value(&mut g.scale, GraphScale::Auto, "Авто");
-                ui.selectable_value(&mut g.scale, GraphScale::Fixed, "Фикс.");
+            row(ui, "Y scale", |ui| {
+                ui.selectable_value(&mut g.scale, GraphScale::Auto, "Auto");
+                ui.selectable_value(&mut g.scale, GraphScale::Fixed, "Fixed");
             });
             if g.scale == GraphScale::Fixed {
-                row(ui, "Диапазон", |ui| {
+                row(ui, "Range", |ui| {
                     ui.add(
                         egui::DragValue::new(&mut g.min_ms)
                             .range(0.0..=1000.0)
                             .speed(0.1)
-                            .suffix(" мс"),
+                            .suffix(" ms"),
                     );
                     ui.label(RichText::new("—").color(text_faint()));
                     ui.add(
                         egui::DragValue::new(&mut g.max_ms)
                             .range(1.0..=2000.0)
                             .speed(0.1)
-                            .suffix(" мс"),
+                            .suffix(" ms"),
                     );
                 });
             }
         });
-        theme::section(ui, "Линия");
+        theme::section(ui, "Line");
         grid(ui, "gr2", |ui| {
-            row(ui, "Толщина", |ui| {
+            row(ui, "Width", |ui| {
                 ui.add(egui::Slider::new(&mut g.line_width, 0.5..=6.0).step_by(0.5));
             });
-            row(ui, "Цвет", |ui| color_edit(ui, &mut g.line_color));
-            row(ui, "Предупреждение от", |ui| {
+            row(ui, "Color", |ui| color_edit(ui, &mut g.line_color));
+            row(ui, "Warning from", |ui| {
                 ui.add(
                     egui::DragValue::new(&mut g.warn_ms)
                         .range(1.0..=1000.0)
                         .speed(0.1)
-                        .suffix(" мс"),
+                        .suffix(" ms"),
                 );
                 color_edit(ui, &mut g.warn_color);
             });
-            row(ui, "Плохой кадр от", |ui| {
+            row(ui, "Bad frame from", |ui| {
                 ui.add(
                     egui::DragValue::new(&mut g.bad_ms)
                         .range(1.0..=2000.0)
                         .speed(0.1)
-                        .suffix(" мс"),
+                        .suffix(" ms"),
                 );
                 color_edit(ui, &mut g.bad_color);
             });
-            row(ui, "Заливка", |ui| {
+            row(ui, "Fill", |ui| {
                 theme::toggle(ui, &mut g.fill);
                 if g.fill {
                     ui.add(egui::Slider::new(&mut g.fill_opacity, 0.0..=1.0));
                 }
             });
-            row(ui, "Фон", |ui| color_edit(ui, &mut g.background));
+            row(ui, "Background", |ui| color_edit(ui, &mut g.background));
         });
-        theme::section(ui, "Сетка и подписи");
+        theme::section(ui, "Grid and labels");
         grid(ui, "gr3", |ui| {
             let mut remove = None;
             for (i, v) in g.grid_ms.iter_mut().enumerate() {
-                row(ui, "Линия", |ui| {
+                row(ui, "Line", |ui| {
                     ui.add(
                         egui::DragValue::new(v)
                             .range(0.1..=2000.0)
                             .speed(0.1)
-                            .suffix(" мс"),
+                            .suffix(" ms"),
                     );
                     ui.label(RichText::new(format!("{:.0} FPS", 1000.0 / *v)).color(text_faint()));
-                    if theme::link(ui, "убрать") {
+                    if theme::link(ui, "remove") {
                         remove = Some(i);
                     }
                 });
@@ -491,7 +487,7 @@ impl App {
             if let Some(i) = remove {
                 g.grid_ms.remove(i);
             }
-            row(ui, "Добавить линию, FPS", |ui| {
+            row(ui, "Add line, FPS", |ui| {
                 for (label, ms) in [
                     ("30", 33.33),
                     ("60", 16.67),
@@ -501,20 +497,18 @@ impl App {
                 ] {
                     if ui
                         .small_button(label)
-                        .on_hover_text(format!("{ms} мс"))
+                        .on_hover_text(format!("{ms} ms"))
                         .clicked()
                     {
                         g.grid_ms.push(ms);
                     }
                 }
             });
-            row(ui, "Цвет сетки", |ui| {
-                color_edit(ui, &mut g.grid_color)
-            });
-            row(ui, "Подписи шкалы", |ui| {
+            row(ui, "Grid color", |ui| color_edit(ui, &mut g.grid_color));
+            row(ui, "Scale labels", |ui| {
                 theme::toggle(ui, &mut g.show_scale);
             });
-            row(ui, "avg / max над графиком", |ui| {
+            row(ui, "avg / max above the graph", |ui| {
                 theme::toggle(ui, &mut g.show_stats);
             });
         });
@@ -523,8 +517,8 @@ impl App {
 
     fn sensor_graphs_ui(&mut self, ui: &mut egui::Ui) {
         use uo_common::sensor::SensorId;
-        theme::section(ui, "Графики датчиков");
-        note(ui, "История любого датчика под графиком кадров. Ширина — как у графика кадров, точка — раз в интервал датчиков.");
+        theme::section(ui, "Sensor graphs");
+        note(ui, "History of any sensor under the frame-time graph. Same width as the frame-time graph, one point per sensor interval.");
         ui.add_space(4.0);
         let graphable = |id: &SensorId| *id != SensorId::Clock;
         let n = self.cfg.sensor_graphs.len();
@@ -548,7 +542,7 @@ impl App {
                             });
                         color_edit(ui, &mut sg.color);
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            if theme::link(ui, "убрать") {
+                            if theme::link(ui, "remove") {
                                 remove = Some(i);
                             }
                             ui.spacing_mut().item_spacing.x = 2.0;
@@ -561,33 +555,33 @@ impl App {
                         });
                     });
                     ui.horizontal_wrapped(|ui| {
-                        ui.label(RichText::new("высота").color(text_dim()));
+                        ui.label(RichText::new("height").color(text_dim()));
                         ui.add(
                             egui::DragValue::new(&mut sg.height)
                                 .range(8.0..=600.0)
                                 .suffix(" px"),
                         );
-                        ui.label(RichText::new("окно").color(text_dim()));
+                        ui.label(RichText::new("window").color(text_dim()));
                         ui.add(
                             egui::DragValue::new(&mut sg.window_s)
                                 .range(2.0..=3600.0)
-                                .suffix(" с"),
+                                .suffix(" s"),
                         );
-                        ui.label(RichText::new("линия").color(text_dim()));
+                        ui.label(RichText::new("line").color(text_dim()));
                         ui.add(
                             egui::DragValue::new(&mut sg.line_width)
                                 .range(0.5..=8.0)
                                 .speed(0.1),
                         );
-                        ui.label(RichText::new("заливка").color(text_dim()));
+                        ui.label(RichText::new("fill").color(text_dim()));
                         theme::toggle(ui, &mut sg.fill);
-                        ui.label(RichText::new("подпись").color(text_dim()));
+                        ui.label(RichText::new("label").color(text_dim()));
                         theme::toggle(ui, &mut sg.show_title);
                     });
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("шкала").color(text_dim()));
-                        ui.selectable_value(&mut sg.auto_scale, true, "Авто");
-                        ui.selectable_value(&mut sg.auto_scale, false, "Фикс.");
+                        ui.label(RichText::new("scale").color(text_dim()));
+                        ui.selectable_value(&mut sg.auto_scale, true, "Auto");
+                        ui.selectable_value(&mut sg.auto_scale, false, "Fixed");
                         if !sg.auto_scale {
                             let unit = sg.sensor.unit();
                             ui.add(
@@ -621,7 +615,7 @@ impl App {
                         ui.selectable_value(&mut self.new_graph, *id, id.description());
                     }
                 });
-            if theme::primary(ui, "Добавить график") {
+            if theme::primary(ui, "Add graph") {
                 self.cfg
                     .sensor_graphs
                     .push(SensorGraph::for_sensor(self.new_graph));
@@ -631,14 +625,14 @@ impl App {
 
     fn tab_look(&mut self, ui: &mut egui::Ui) {
         let u = &mut self.cfg.ui;
-        theme::section(ui, "Тема настроек");
+        theme::section(ui, "Settings theme");
         grid(ui, "lk1", |ui| {
-            row(ui, "Тема", |ui| {
-                ui.selectable_value(&mut u.theme, UiTheme::Dark, "Тёмная");
-                ui.selectable_value(&mut u.theme, UiTheme::Light, "Светлая");
-                ui.selectable_value(&mut u.theme, UiTheme::System, "Как в системе");
+            row(ui, "Theme", |ui| {
+                ui.selectable_value(&mut u.theme, UiTheme::Dark, "Dark");
+                ui.selectable_value(&mut u.theme, UiTheme::Light, "Light");
+                ui.selectable_value(&mut u.theme, UiTheme::System, "System");
             });
-            row(ui, "Акцент", |ui| {
+            row(ui, "Accent", |ui| {
                 ui.spacing_mut().item_spacing.x = 4.0;
                 for a in UiAccent::ALL {
                     let (r, g, b) = a.rgb();
@@ -656,37 +650,37 @@ impl App {
                 ui.label(RichText::new(u.accent.name()).color(text_dim()));
             });
         });
-        note(ui, "Тема и акцент меняют только окно настроек. Цвета самого оверлея — на вкладках «Вид» и «Графики».");
+        note(ui, "Theme and accent change only this settings window. The overlay's own colors are on the Style and Graphs tabs.");
     }
 
     fn tab_stats(&mut self, ui: &mut egui::Ui) {
         let s = &mut self.cfg.stats;
-        theme::section(ui, "Расчёт");
+        theme::section(ui, "Calculation");
         grid(ui, "st", |ui| {
-            row(ui, "Окно FPS", |ui| {
+            row(ui, "FPS window", |ui| {
                 ui.add(
                     egui::Slider::new(&mut s.fps_window_ms, 100..=5000)
                         .logarithmic(true)
-                        .suffix(" мс"),
+                        .suffix(" ms"),
                 );
             });
-            row(ui, "Окно 1% / 0.1% low", |ui| {
+            row(ui, "1% / 0.1% low window", |ui| {
                 ui.add(
                     egui::Slider::new(&mut s.lows_window_s, 1.0..=120.0)
                         .logarithmic(true)
-                        .suffix(" с"),
+                        .suffix(" s"),
                 );
             });
-            row(ui, "Метод low", |ui| {
-                ui.selectable_value(&mut s.lows_method, LowsMethod::Percentile, "Перцентиль");
-                ui.selectable_value(&mut s.lows_method, LowsMethod::Average, "Среднее худших");
+            row(ui, "Lows method", |ui| {
+                ui.selectable_value(&mut s.lows_method, LowsMethod::Percentile, "Percentile");
+                ui.selectable_value(&mut s.lows_method, LowsMethod::Average, "Average of worst");
             });
         });
         note(
             ui,
-            "FPS — число кадров, делённое на их суммарное время в окне. Время кадра — интервал между вызовами \
-             Present одной цепочки буферов по таймеру QPC из ETW, как в PresentMon. Перцентиль: 1% low = FPS \
-             на 99-м перцентиле времени кадра.",
+            "FPS is the number of frames divided by their total time in the window. Frame time is the interval between \
+             Present calls of one swap chain, timed with QPC from ETW, as in PresentMon. \
+             Percentile: 1% low = FPS at the 99th percentile of frame time.",
         );
     }
 }
@@ -766,7 +760,7 @@ impl eframe::App for App {
                 ui.horizontal(|ui| {
                     match &self.load_error {
                         Some(e) => ui.label(
-                            RichText::new(format!("config.toml повреждён: {e}"))
+                            RichText::new(format!("config.toml is damaged: {e}"))
                                 .size(12.0)
                                 .color(accent_hi()),
                         ),
@@ -790,15 +784,14 @@ impl eframe::App for App {
                     };
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         ui.spacing_mut().item_spacing.x = 18.0;
-                        if theme::link(ui, "Сбросить всё") {
+                        if theme::link(ui, "Reset all") {
                             self.cfg = Config::default();
                         }
-                        if theme::link(ui, "Папка конфига") {
+                        if theme::link(ui, "Config folder") {
                             let _ = std::fs::create_dir_all(config_dir());
                             overlay::open_path(&config_dir());
                         }
-                        if !overlay::is_running() && theme::link(ui, "Запустить оверлей")
-                        {
+                        if !overlay::is_running() && theme::link(ui, "Start overlay") {
                             overlay::launch();
                         }
                     });
@@ -890,13 +883,13 @@ mod overlay {
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("Universal Overlay — настройки")
+            .with_title("Universal Overlay Settings")
             .with_inner_size([720.0, 640.0])
             .with_min_inner_size([560.0, 420.0]),
         ..Default::default()
     };
     eframe::run_native(
-        "Universal Overlay — настройки",
+        "Universal Overlay Settings",
         options,
         Box::new(|_cc| Ok(Box::new(App::new()))),
     )
@@ -918,31 +911,31 @@ fn updater_path() -> std::path::PathBuf {
 
 impl App {
     fn updates_ui(&mut self, ui: &mut egui::Ui) {
-        theme::section(ui, "Обновления");
+        theme::section(ui, "Updates");
         let result = self.update_check.lock().map(|g| g.clone()).unwrap_or(None);
         if result.is_some() {
             self.checking = false;
         }
         grid(ui, "upd", |ui| {
-            row(ui, "Версия", |ui| {
+            row(ui, "Version", |ui| {
                 ui.label(RichText::new(uo_common::VERSION).color(text()));
             });
-            row(ui, "Последняя версия", |ui| {
+            row(ui, "Latest version", |ui| {
                 if self.checking {
                     ui.spinner();
-                    ui.label(RichText::new("проверка…").color(text_dim()));
+                    ui.label(RichText::new("checking…").color(text_dim()));
                 } else {
                     match result.as_deref() {
                         Some(r) if r.starts_with("available ") => {
                             let v = r.trim_start_matches("available ").to_string();
-                            ui.label(RichText::new(format!("доступна {v}")).color(text()));
-                            if theme::primary(ui, "Обновить") {
+                            ui.label(RichText::new(format!("{v} available")).color(text()));
+                            if theme::primary(ui, "Update") {
                                 let _ = std::process::Command::new(updater_path()).spawn();
                                 std::process::exit(0); // the installer restarts everything
                             }
                         }
                         Some(r) if r.starts_with("latest ") => {
-                            ui.label(RichText::new("установлена последняя").color(text_dim()));
+                            ui.label(RichText::new("up to date").color(text_dim()));
                         }
                         Some(r) => {
                             ui.label(
@@ -951,7 +944,7 @@ impl App {
                         }
                         None => {}
                     }
-                    if theme::link(ui, "проверить") {
+                    if theme::link(ui, "check") {
                         self.checking = true;
                         let slot = self.update_check.clone();
                         if let Ok(mut g) = slot.lock() {
@@ -978,6 +971,6 @@ impl App {
                 }
             });
         });
-        note(ui, "Обновление берёт последний релиз с GitHub, проверяет SHA-256 и заменяет только программу — настройки сохраняются.");
+        note(ui, "Updates download the latest GitHub release, verify its SHA-256 and replace only the program — your settings are kept.");
     }
 }

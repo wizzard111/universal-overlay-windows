@@ -14,7 +14,7 @@
 use std::sync::atomic::{AtomicI32, AtomicU32};
 
 pub const SERVICE_NAME: &str = "UniversalOverlaySensors";
-pub const SERVICE_DISPLAY: &str = "Universal Overlay — датчики";
+pub const SERVICE_DISPLAY: &str = "Universal Overlay Sensors";
 pub const SERVICE_EXE: &str = "uo-sensord.exe";
 
 pub const MAPPING: &str = "Global\\UniversalOverlay.Sensors";
@@ -50,9 +50,9 @@ pub const SIZE: usize = std::mem::size_of::<Shared>();
 pub fn status_text(s: i32) -> &'static str {
     match s {
         STATUS_OK => "ok",
-        STATUS_UNSUPPORTED_CPU => "процессор не поддерживается",
-        STATUS_NO_DRIVER => "драйвер PawnIO не установлен",
-        STATUS_NO_MODULE => "нет модуля PawnIO",
-        _ => "ошибка драйвера",
+        STATUS_UNSUPPORTED_CPU => "CPU not supported",
+        STATUS_NO_DRIVER => "PawnIO driver is not installed",
+        STATUS_NO_MODULE => "PawnIO module is missing",
+        _ => "driver error",
     }
 }

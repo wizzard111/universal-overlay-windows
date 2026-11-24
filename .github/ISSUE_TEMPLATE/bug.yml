@@ -13,7 +13,7 @@ body:
     id: version
     attributes:
       label: Версия Universal Overlay
-      description: «Настройки → Общие → Обновления».
+      description: Settings → General → Updates.
       placeholder: "0.1.0"
     validations:
       required: true

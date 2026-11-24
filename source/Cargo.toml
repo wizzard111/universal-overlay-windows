@@ -3,12 +3,12 @@ resolver = "2"
 members = ["crates/common", "crates/overlay", "crates/settings", "crates/updater", "crates/sensord", "crates/setup"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/wizzard111/universal-overlay-windows"
 homepage = "https://github.com/wizzard111/universal-overlay-windows"
-description = "Лёгкий оверлей FPS, времени кадра и датчиков для Windows"
+description = "Lightweight FPS, frame-time and sensor overlay for Windows"
 
 [profile.release]
 opt-level = 3

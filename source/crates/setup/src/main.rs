@@ -35,6 +35,9 @@ use system::*;
 const APP_NAME: &str = "Universal Overlay";
 const OVERLAY: &str = "universal-overlay.exe";
 const SETTINGS: &str = "universal-overlay-settings.exe";
+/// Start-menu shortcut name used by 0.1.0 (Russian UI); removed on install
+/// and uninstall so an update does not leave two settings shortcuts.
+const LEGACY_SETTINGS_LNK: &str = "Universal Overlay \u{2014} \u{43d}\u{430}\u{441}\u{442}\u{440}\u{43e}\u{439}\u{43a}\u{438}.lnk";
 const PROCESSES: &[&str] = &[OVERLAY, SETTINGS, "uo-probe.exe"];
 
 #[derive(Clone, Copy, PartialEq)]
@@ -119,7 +122,7 @@ impl Log {
 
     fn warn(&mut self, msg: &str) {
         println!("  ! {msg}");
-        self.write(&format!("ВНИМАНИЕ: {msg}"));
+        self.write(&format!("WARNING: {msg}"));
     }
 
     fn write(&mut self, msg: &str) {
@@ -137,7 +140,7 @@ fn ask(opts: &Opts, question: &str) -> bool {
     let _ = std::io::stdout().flush();
     let mut s = String::new();
     let _ = std::io::stdin().read_line(&mut s);
-    matches!(s.trim().to_lowercase().as_str(), "y" | "yes" | "д" | "да")
+    matches!(s.trim().to_lowercase().as_str(), "y" | "yes")
 }
 
 fn pause(opts: &Opts, msg: &str) {
@@ -215,7 +218,7 @@ fn install(opts: &Opts, log: &mut Log) -> Result<(), String> {
     let app = exe_dir.join("app");
     if !app.join(OVERLAY).is_file() {
         return Err(format!(
-            "рядом с установщиком нет папки app с программой ({})",
+            "no app folder next to the installer ({})",
             app.display()
         ));
     }
@@ -223,88 +226,91 @@ fn install(opts: &Opts, log: &mut Log) -> Result<(), String> {
         .map(|s| s.trim().to_string())
         .unwrap_or_default();
     let dir = &opts.install_dir;
-    println!("\n  {APP_NAME} {version}\n  Папка: {}\n", dir.display());
+    println!("\n  {APP_NAME} {version}\n  Folder: {}\n", dir.display());
     log.write(&format!(
-        "{} {version} в {}",
+        "{} {version} to {}",
         if opts.mode == Mode::Update {
-            "Обновление"
+            "Refresh"
         } else {
-            "Установка"
+            "Installing"
         },
         dir.display()
     ));
 
-    log.step("Останавливаю оверлей и службу датчиков");
+    log.step("Stopping the overlay and the sensor service");
     stop_overlay(PROCESSES);
     service_stop();
 
     if pawnio_installed() {
-        log.step("Драйвер PawnIO уже установлен");
+        log.step("PawnIO driver is already installed");
     } else {
         let setup = app.join("pawnio").join("PawnIO_setup.exe");
         if setup.is_file() {
-            log.step("Устанавливаю драйвер PawnIO (температура CPU)");
+            log.step("Installing the PawnIO driver (CPU temperature)");
             match run_wait(&setup, "-install -silent") {
                 Ok(0) => {}
                 Ok(code) => log.warn(&format!(
-                    "установщик PawnIO вернул код {code} — температура CPU может быть недоступна"
+                    "PawnIO setup returned code {code} — CPU temperature may be unavailable"
                 )),
-                Err(e) => log.warn(&format!("PawnIO не установлен: {e}")),
+                Err(e) => log.warn(&format!("PawnIO not installed: {e}")),
             }
         } else {
-            log.warn("в пакете нет PawnIO_setup.exe — температура CPU будет недоступна");
+            log.warn("PawnIO_setup.exe is missing from the package — CPU temperature will be unavailable");
         }
     }
 
-    log.step("Удаляю предыдущую версию");
+    log.step("Removing the previous version");
     if remove_dir_robust(dir) > 0 {
         return Err(format!(
-            "не удалось удалить {} — закройте программы из этой папки",
+            "could not remove {} — close programs running from that folder",
             dir.display()
         ));
     }
-    log.step("Копирую файлы");
-    let size = copy_dir(&app, dir).map_err(|e| format!("копирование: {e}"))?;
+    log.step("Copying files");
+    let size = copy_dir(&app, dir).map_err(|e| format!("copying: {e}"))?;
     let _ = std::fs::remove_file(dir.join("pawnio").join("PawnIO_setup.exe"));
     let me = std::env::current_exe().map_err(|e| e.to_string())?;
     std::fs::copy(&me, dir.join("uninstall.exe")).map_err(|e| format!("uninstall.exe: {e}"))?;
 
-    log.step("Регистрирую службу датчиков (температура CPU без прав администратора у оверлея)");
+    log.step(
+        "Registering the sensor service (CPU temperature without admin rights for the overlay)",
+    );
     if let Err(e) = service_install(&dir.join(uo_common::sensord::SERVICE_EXE)) {
-        log.warn(&format!("служба: {e}"));
+        log.warn(&format!("service: {e}"));
     }
 
     match add_to_performance_log_users() {
-        Ok(true) => log.step("Пользователь добавлен в группу «Пользователи журналов производительности» — FPS заработает после повторного входа в Windows"),
-        Ok(false) => log.step("Доступ к счётчикам кадров уже есть"),
-        Err(e) => log.warn(&format!("группа «Пользователи журналов производительности»: {e}")),
+        Ok(true) => log.step("User added to the \"Performance Log Users\" group — FPS will work after signing in to Windows again"),
+        Ok(false) => log.step("Frame counters access is already granted"),
+        Err(e) => log.warn(&format!("\"Performance Log Users\" group: {e}")),
     }
 
-    log.step("Добавляю в меню «Пуск»");
+    log.step("Adding to the Start menu");
     let menu = start_menu_dir();
+    let _ = std::fs::remove_file(menu.join(LEGACY_SETTINGS_LNK));
     let overlay = dir.join(OVERLAY);
     com::shortcut(
         &menu.join(format!("{APP_NAME}.lnk")),
         &overlay,
         "",
         dir,
-        "Оверлей FPS и датчиков",
+        "FPS and sensor overlay",
     )?;
     com::shortcut(
-        &menu.join(format!("{APP_NAME} — настройки.lnk")),
+        &menu.join(format!("{APP_NAME} Settings.lnk")),
         &dir.join(SETTINGS),
         "",
         dir,
-        "Настройки оверлея",
+        "Overlay settings",
     )?;
 
-    log.step("Регистрирую в «Установленных приложениях» и автозапуске");
+    log.step("Registering in Installed apps and autostart");
     register_uninstall(dir, &version, size)?;
     set_autostart(Some(&overlay))?;
 
-    log.step("Запускаю оверлей");
+    log.step("Starting the overlay");
     launch_as_user(&overlay);
-    log.write("Готово");
+    log.write("Done");
     Ok(())
 }
 
@@ -340,60 +346,61 @@ fn uninstall(opts: &Opts, log: &mut Log) -> Result<(), String> {
     if let Some(pid) = opts.parent_pid {
         wait_for_exit(pid, 5000);
     }
-    println!("\n  Удаление {APP_NAME} из {}\n", dir.display());
-    log.write(&format!("Удаление из {}", dir.display()));
+    println!("\n  Uninstalling {APP_NAME} from {}\n", dir.display());
+    log.write(&format!("Uninstalling from {}", dir.display()));
 
-    log.step("Останавливаю оверлей");
+    log.step("Stopping the overlay");
     stop_overlay(PROCESSES);
-    log.step("Удаляю службу датчиков");
+    log.step("Removing the sensor service");
     service_remove();
-    log.step("Удаляю автозапуск и ярлыки");
+    log.step("Removing autostart and shortcuts");
     let _ = set_autostart(None);
     let menu = start_menu_dir();
     let _ = std::fs::remove_file(menu.join(format!("{APP_NAME}.lnk")));
-    let _ = std::fs::remove_file(menu.join(format!("{APP_NAME} — настройки.lnk")));
-    log.step("Удаляю запись из «Установленных приложений»");
+    let _ = std::fs::remove_file(menu.join(format!("{APP_NAME} Settings.lnk")));
+    let _ = std::fs::remove_file(menu.join(LEGACY_SETTINGS_LNK));
+    log.step("Removing the Installed apps entry");
     unregister_uninstall();
-    log.step("Удаляю файлы программы");
+    log.step("Removing program files");
     if dir.join(OVERLAY).is_file() || dir.join("uninstall.exe").is_file() {
         let left = remove_dir_robust(dir);
         if left > 0 {
             log.warn(&format!(
-                "{left} файл(ов) заняты — удалятся при перезагрузке"
+                "{left} file(s) in use — they will be removed at the next restart"
             ));
         }
     }
 
     let cfg = uo_common::config::config_dir();
     if cfg.exists() {
-        if opts.purge || ask(opts, "Удалить и настройки оверлея?") {
+        if opts.purge || ask(opts, "Remove the overlay settings too?") {
             let _ = std::fs::remove_dir_all(&cfg);
-            log.step("Настройки удалены");
+            log.step("Settings removed");
         } else {
-            log.step(&format!("Настройки оставлены: {}", cfg.display()));
+            log.step(&format!("Settings kept: {}", cfg.display()));
         }
     }
     if pawnio_installed()
         && ask(
             opts,
-            "Удалить драйвер PawnIO? (его используют и FanControl, LibreHardwareMonitor)",
+            "Remove the PawnIO driver? (FanControl, LibreHardwareMonitor and others use it too)",
         )
     {
-        log.step("Удаляю PawnIO");
+        log.step("Removing PawnIO");
         pawnio_uninstall();
     }
     if opts.stage2 {
         delete_at_reboot(&me);
     }
-    log.write("Удалено");
+    log.write("Uninstalled");
     Ok(())
 }
 
 fn main() {
     let opts = parse_args();
     set_console_title(match opts.mode {
-        Mode::Uninstall => "Universal Overlay — удаление",
-        _ => "Universal Overlay — установка",
+        Mode::Uninstall => "Universal Overlay — uninstall",
+        _ => "Universal Overlay — setup",
     });
     let mut log = Log::open();
     let result = match opts.mode {
@@ -403,27 +410,27 @@ fn main() {
     match result {
         Ok(()) => {
             match opts.mode {
-                Mode::Uninstall => println!("\n  {APP_NAME} удалён."),
-                Mode::Update => println!("\n  Обновлено. Настройки сохранены."),
+                Mode::Uninstall => println!("\n  {APP_NAME} has been uninstalled."),
+                Mode::Update => println!("\n  Updated. Your settings were kept."),
                 Mode::Install => println!(
-                    "\n  Готово. {APP_NAME} есть в меню «Пуск», значок — в трее, Ctrl+Alt+O — показать/скрыть.\n  Журнал: {}",
+                    "\n  Done. {APP_NAME} is in the Start menu, its icon is in the tray, Ctrl+Alt+O shows/hides it.\n  Log: {}",
                     program_data().join(APP_NAME).join("install.log").display()
                 ),
             }
             if opts.mode == Mode::Update {
                 std::thread::sleep(std::time::Duration::from_secs(2));
             }
-            pause(&opts, "Нажмите Enter, чтобы закрыть окно");
+            pause(&opts, "Press Enter to close this window");
         }
         Err(e) => {
             println!("\n  ✗ {e}");
-            log.write(&format!("ОШИБКА: {e}"));
+            log.write(&format!("ERROR: {e}"));
             pause(
                 &Opts {
                     quiet: false,
                     ..opts
                 },
-                "Нажмите Enter",
+                "Press Enter",
             );
             std::process::exit(1);
         }
