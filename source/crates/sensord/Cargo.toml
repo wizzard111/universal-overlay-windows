@@ -1,0 +1,15 @@
+[package]
+name = "uo-sensord"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Universal Overlay sensor service (CPU temperature via PawnIO)"
+build = "build.rs"
+
+[dependencies]
+uo-common = { path = "../common" }
+libloading = "0.9.1"
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_System_Memory", "Win32_System_Services", "Win32_System_Threading", "Win32_System_Registry"] }
+
+[build-dependencies]
+embed-resource = "3.0.12"

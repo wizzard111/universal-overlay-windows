@@ -1,0 +1,34 @@
+[package]
+name = "uo-setup"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Universal Overlay installer / uninstaller"
+build = "build.rs"
+
+[[bin]]
+name = "uo-setup"
+path = "src/main.rs"
+
+[dependencies]
+uo-common = { path = "../common" }
+windows-sys = { version = "0.61.2", features = [
+    "Win32_Foundation",
+    "Win32_NetworkManagement_NetManagement",
+    "Win32_Security",
+    "Win32_Security_Authorization",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Com",
+    "Win32_System_Console",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_Registry",
+    "Win32_System_RemoteDesktop",
+    "Win32_System_Services",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[build-dependencies]
+embed-resource = "3.0.12"
